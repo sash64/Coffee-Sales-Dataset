@@ -1,0 +1,87 @@
+
+create table products_clean (
+    productid integer,
+    coffeetype text,
+    roasttype text,
+    size text,
+    unitprice real,
+    priceper100g real,
+    profit real
+);
+
+
+insert into products_clean (productid, coffeetype, roasttype, size, unitprice, priceper100g, profit)
+select "product id", "coffee type", "roast type", size, "unit price", "price per 100g", profit
+from products;
+
+select * from products_clean;
+
+
+create table orders_clean (
+    orderid integer,
+    orderdate text,
+    customerid integer,
+    productid integer,
+    quantity integer
+);
+
+insert into orders_clean (orderid, orderdate, customerid, productid, quantity)
+select "order id", "order date", "customer id", "product id", quantity
+from orders;
+
+select * from orders_clean;
+
+
+create table customers_clean (
+    customerid integer,
+    customername text,
+    email text,
+    phonenumber text,
+    addressline1 text,
+    city text,
+    country text,
+    postcode text,
+    loyaltycard text
+);
+
+insert into customers_clean (customerid, customername, email, phonenumber, addressline1, city, country, postcode, loyaltycard)
+select "customer id", "customer name", email, "phone number", "address line 1", city, country, postcode, "loyality card"
+from customers;
+
+select * from customers_clean;
+
+
+select
+    customername,
+    ifnull(email, 'n/a') as email,
+    ifnull(phonenumber, 'n/a') as phonenumber
+from customers_clean;
+
+create table fulldata as
+select
+    o.orderid,
+    o.orderdate,
+    c.customername,
+    ifnull(nullif(c.email, ''), 'n/a') as email,
+    ifnull(nullif(c.phonenumber, ''), 'n/a') as phonenumber,
+    ifnull(nullif(c.addressline1, ''), 'n/a') as addressline1,
+    ifnull(nullif(c.city, ''), 'n/a') as city,
+    ifnull(nullif(c.country, ''), 'n/a') as country,
+    ifnull(nullif(c.postcode, ''), 'n/a') as postcode,
+    ifnull(nullif(c.loyaltycard, ''), 'n/a') as loyaltycard,
+    p.coffeetype,
+    p.roasttype,
+    p.size,
+    p.unitprice,
+    p.priceper100g,
+    p.profit,
+    o.quantity,
+    (o.quantity * p.unitprice) as totalprice,
+    (o.quantity * p.profit) as totalprofit
+from orders_clean o
+join customers_clean c on o.customerid = c.customerid
+join products_clean p on o.productid = p.productid;
+
+select * from fulldata;
+
+
